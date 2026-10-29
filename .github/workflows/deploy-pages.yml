@@ -23,12 +23,13 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-
-      - name: Install Godot 4.7 and export templates
+      
+      - name: Setup Godot Engine
         uses: chickensoft-games/setup-godot@v2
         with:
           version: 4.7.0
           use-dotnet: false
+          include-templates: true
 
       - name: Import project and export Web build
         working-directory: secret_council_godot

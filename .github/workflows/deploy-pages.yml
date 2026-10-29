@@ -1,0 +1,61 @@
+name: Export and deploy Godot Web build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: ["main"]
+    paths:
+      - "secret_council_godot/**"
+      - ".github/workflows/deploy-pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Install Godot 4.7 and export templates
+        uses: chickensoft-games/setup-godot@v2
+        with:
+          version: 4.7.0
+          use-dotnet: false
+
+      - name: Import project and export Web build
+        working-directory: secret_council_godot
+        run: |
+          mkdir -p build/web
+          godot --headless --editor --path . --quit
+          godot --headless --path . --export-release "Web" build/web/index.html
+
+      - name: Verify export output
+        working-directory: secret_council_godot
+        run: |
+          test -s build/web/index.html
+          find build/web -maxdepth 1 -type f -printf '%f\n' | sort
+          test "$(find build/web -maxdepth 1 -type f | wc -l)" -ge 3
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: secret_council_godot/build/web
+
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

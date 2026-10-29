@@ -1,0 +1,12 @@
+# Example Caddy reverse proxy for a separately hosted game server.
+# This is a TEMPLATE, not a drop-in deployment. Configure DNS and the tunnel/firewall
+# to forward the public hostname to this proxy. Caddy provides public TLS automatically
+# when DNS and inbound access are configured correctly.
+#
+# Replace play.example.com with a hostname you control.
+# The Godot native host listens on 127.0.0.1:24590 (prefer loopback binding when
+# supported by your deployment); Caddy accepts secure WSS and proxies WebSocket upgrades.
+
+play.example.com {
+    reverse_proxy 127.0.0.1:24590
+}
